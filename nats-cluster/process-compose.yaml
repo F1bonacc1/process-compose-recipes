@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/F1bonacc1/process-compose/main/schemas/process-compose-schema.json
+
+version: "0.5"
+
+env_cmds:
+  NATS_VERSION: nats-server -v | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
+  
+processes:
+  prepare:
+    command: mkdir -p ./nats-cluster
+  pc_log:
+    command: "tail -f -n100 process-compose-${USER}.log"
+    working_dir: "/tmp"
+  nats-cluster-node:
+    command: >
+      nats-server --name N$${PC_REPLICA_NUM} --js --sd ./data/n$${PC_REPLICA_NUM} --cluster_name=nats-cluster
+      -p 422$${PC_REPLICA_NUM}
+      -m 822$${PC_REPLICA_NUM}
+      --cluster nats://127.0.0.1:622$${PC_REPLICA_NUM}
+      --routes=nats-route://127.0.0.1:6220,nats-route://127.0.0.1:6221,nats-route://127.0.0.1:6222
+    replicas: 3
+    working_dir: "./nats-cluster"
+    depends_on:
+      prepare:
+        condition: process_completed_successfully
+    description: "NATS Server instance N{{ .PC_REPLICA_NUM }} (port 422{{ .PC_REPLICA_NUM }}) with JetStream enabled"
+    # ready_log_line: "Server is ready"
+
+  nats-top:
+    command: nats-top
+    is_foreground: true
