@@ -2,12 +2,16 @@
 
 version: "0.5"
 
-env_cmds:
-  NATS_VERSION: nats-server -v | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
-  
 processes:
+  sanitycheck:
+    command: "NV=$(nats-server -v) && echo Found NATS: $${NV}"
+    availability:
+      restart: "exit_on_failure"
   prepare:
     command: mkdir -p ./nats-cluster
+    depends_on:
+      sanitycheck:
+        condition: process_completed_successfully
   pc_log:
     command: "tail -f -n100 process-compose-${USER}.log"
     working_dir: "/tmp"
@@ -24,6 +28,16 @@ processes:
       prepare:
         condition: process_completed_successfully
     description: "NATS Server instance N{{ .PC_REPLICA_NUM }} (port 422{{ .PC_REPLICA_NUM }}) with JetStream enabled"
+    readiness_probe:
+      http_get:
+        host: 127.0.0.1
+        path: "/healthz?js-server-only=true"
+        port: "822{{ .PC_REPLICA_NUM }}"
+      initial_delay_seconds: 5
+      period_seconds: 10
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3   
     # ready_log_line: "Server is ready"
 
   nats-top:
