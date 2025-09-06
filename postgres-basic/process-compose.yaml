@@ -11,6 +11,20 @@ env_cmd:
   PGHOST: "$(pwd)/postgresql/postgres_data"
 
 processes:
+  sanitycheck:
+    command: "PV=$(pg_ctl --version) && echo Found PostgreSQL: $${PV}"
+    availability:
+      restart: "exit_on_failure"
+
+  init-postgres-data:
+    command: "([ ! -d $$PGDATA ] && mkdir -p $$PGDATA && chmod 700 $$PGDATA && initdb -D $$PGDATA --username=postgres) || echo 'PostgreSQL data directory already initialized'"
+    availability:
+      restart: "no"
+    working_dir: "."
+    depends_on:
+      sanitycheck:
+        condition: process_completed_successfully   
+
   postgresql:
     command: "pg_ctl start -D $$PGDATA -o '-k $$PGHOST' -w -t 30 -l $$PGDATA/pg.log"
     is_daemon: true
@@ -25,18 +39,16 @@ processes:
     depends_on:
       init-postgres-data:
         condition: process_completed_successfully
+    description: "PostgreSQL database server instance"
 
-  init-postgres-data:
-    command: "([ ! -d $$PGDATA ] && mkdir -p $$PGDATA && chmod 700 $$PGDATA && initdb -D $$PGDATA --username=postgres) || echo 'PostgreSQL data directory already initialized'"
-    availability:
-      restart: "no"
-    working_dir: "."
-  
   pc_log:
     command: "tail -f -n100 process-compose-${USER}.log"
     working_dir: "/tmp"
 
   pg_log:
     command: "tail -f -n100 $$PGDATA/pg.log"
+    depends_on:
+      postgresql:
+        condition: process_started
     availability:
       restart: "always"
