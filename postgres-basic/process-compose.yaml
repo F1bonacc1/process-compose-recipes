@@ -1,0 +1,40 @@
+version: "0.5"
+
+environment:
+  - "PGDATA=./postgres_data/data"
+  - "PGUSER=postgres"
+  - "PGDATABASE=postgres"
+  - "PGPORT=5432"
+env_cmd:
+  PGHOST: "$(pwd)/postgresql/postgres_data"
+
+processes:
+  postgresql:
+    command: "pg_ctl start -D $$PGDATA -o '-k $$PGHOST' -w -t 30 -l $$PGDATA/pg.log"
+    is_daemon: true
+    working_dir: "."
+    shutdown: 
+      command: "pg_ctl stop -m fast"
+    availability:
+      restart: "always"
+    readiness_probe:
+      exec:
+        command: "pg_isready"
+    depends_on:
+      init-postgres-data:
+        condition: process_completed_successfully
+
+  init-postgres-data:
+    command: "([ ! -d $$PGDATA ] && mkdir -p $$PGDATA && chmod 700 $$PGDATA && initdb -D $$PGDATA --username=postgres) || echo 'PostgreSQL data directory already initialized'"
+    availability:
+      restart: "no"
+    working_dir: "."
+  
+  pc_log:
+    command: "tail -f -n100 process-compose-${USER}.log"
+    working_dir: "/tmp"
+
+  pg_log:
+    command: "tail -f -n100 $$PGDATA/pg.log"
+    availability:
+      restart: "always"
