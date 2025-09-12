@@ -260,7 +260,3 @@ nats-cluster-node:
 - [JetStream Guide](https://docs.nats.io/jetstream)
 - [NATS Clustering](https://docs.nats.io/running-a-nats-service/configuration/clustering)
 - [Process-Compose Documentation](https://f1bonacc1.github.io/process-compose/launcher/)
-
-## License
-
-This recipe is part of the Process-Compose Recipes collection, licensed under MIT License.
