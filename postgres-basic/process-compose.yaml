@@ -7,12 +7,12 @@ environment:
   - "PGUSER=postgres"
   - "PGDATABASE=postgres"
   - "PGPORT=5432"
-env_cmd:
-  PGHOST: "$(pwd)/postgresql/postgres_data"
+env_cmds:
+  PGHOST: "echo $(pwd)/postgres_data"
 
 processes:
   sanitycheck:
-    command: "PV=$(pg_ctl --version) && echo Found PostgreSQL: $${PV}"
+    command: "PV=$(pg_ctl --version) && echo Found PostgreSQL: $${PV} && echo Data dir: $$PGHOST"
     availability:
       restart: "exit_on_failure"
 
