@@ -343,7 +343,3 @@ psql -h ./postgres_data -U postgres -d postgres -c "SELECT * FROM pg_stat_databa
 - [PostgreSQL Administration](https://www.postgresql.org/docs/current/admin.html)
 - [PostgreSQL Performance Tuning](https://wiki.postgresql.org/wiki/Performance_Optimization)
 - [Process-Compose Documentation](https://f1bonacc1.github.io/process-compose/launcher/)
-
-## License
-
-This recipe is part of the Process-Compose Recipes collection, licensed under MIT License.
