@@ -10,7 +10,7 @@ Process-Compose Recipes are pre-configured `process-compose.yaml` files for popu
 
 ### Prerequisites
 
-- [Process-Compose](https://github.com/F1bonacc1/process-compose) v1.80.0 or later
+- [Process-Compose](https://github.com/F1bonacc1/process-compose) v1.75 or later
 
 ### Using Recipes
 
